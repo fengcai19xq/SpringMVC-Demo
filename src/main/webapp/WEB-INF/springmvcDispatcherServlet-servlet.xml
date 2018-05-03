@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<beans  
+    xmlns="http://www.springframework.org/schema/beans"  
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+    xmlns:tx="http://www.springframework.org/schema/tx"  
+    xmlns:context="http://www.springframework.org/schema/context"    
+    xmlns:mvc="http://www.springframework.org/schema/mvc"    
+    xsi:schemaLocation="http://www.springframework.org/schema/beans   
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd   
+    http://www.springframework.org/schema/tx   
+    http://www.springframework.org/schema/tx/spring-tx-3.0.xsd  
+    http://www.springframework.org/schema/context  
+    http://www.springframework.org/schema/context/spring-context-3.0.xsd  
+    http://www.springframework.org/schema/mvc  
+    http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd">
+    
+    <!-- 自动扫描的包名 -->  
+    <context:component-scan base-package="com.sky.knowledge" ></context:component-scan>  
+    <!-- 默认的注解映射的支持 -->  
+  <!--   <mvc:annotation-driven /> -->  
+     <!-- 
+    <bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"/>
+   <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"/>
+   -->  
+   <!-- HandlerMapping --> <!-- 表示将请求的URL和Bean名字映射，如URL为 “上下文/hello”，则Spring配置文件必须有一个名字为“/hello”的Bean，上下文默认忽略。 -->     
+	<!-- <bean class="org.springframework.web.servlet.handler.BeanNameUrlHandlerMapping"/> -->      
+	       
+	<!-- HandlerAdapter --> <!-- 表示所有实现了org.springframework.web.servlet.mvc.Controller接口的Bean可以作为Spring Web MVC中的处理器。如果需要其他类型的处理器可以通过实现HadlerAdapter来解决。 -->     
+	<!-- <bean class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter"/>  -->
+	
+	    <!-- 配置视图解析器：如何把handler方法返回值解析为实现的物理视图 -->
+       <bean id="InternalResourceViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver"> <!-- 用于支持Servlet、JSP视图解析； -->
+       <!--  <property name="viewClass"><value>org.springframework.web.servlet.view.JstlView</value></property> --><!-- JstlView表示JSP模板页面需要使用JSTL标签库，classpath中必须包含jstl的相关jar包； --> 
+        <property name="prefix"><value>/WEB-INF/jsp/</value></property> 
+        <property name="suffix"><value>.jsp</value> </property><!-- prefix和suffix：查找视图页面的前缀和后缀（前缀[逻辑视图名]后缀），比如传进来的逻辑视图名为hello，则该该jsp视图页面应该存放在“WEB-INF/jsp/hello.jsp”； -->
+       </bean> 
+       
+       	<!-- 配置视图  BeanNameViewResolver 解析器: 使用视图的名字来解析视图 -->
+	<!-- 通过 order 属性来定义视图解析器的优先级, order 值越小优先级越高 -->
+	<bean class="org.springframework.web.servlet.view.BeanNameViewResolver">
+		<property name="order" value="100"></property>
+	</bean>
+	
+	<bean id="messageSource"
+		class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basename" value="i18n"></property><!-- 配置国际化资源文件 -->
+		 <property name="basenames"><!-- 用于 加载 .properties文件 
+		                                                                                      使用：MessageSource resources = new ClassPathXmlApplicationContext("springmvcDispatcherServlet-servlet.xml");
+									 String message = resources.getMessage("message", null, "Default", null);
+									 -->
+		      <list>
+		        <value>resource</value><!-- .properties文件名 -->
+		        <value>exceptions</value>
+		      </list>
+    </property>	
+	</bean>
+	
+	<!-- 配置直接转发的页面 -->
+	<!-- 可以直接相应转发的页面, 而无需再经过 Handler 的方法.  -->
+	<!-- 主要：如果配置了mvc:view-controller 则必须配置 mvc:annotation-driven，否则正常的requestMap则不起作用啦 -->
+	<mvc:view-controller path="/success" view-name="success"/>
+	
+		<!-- 在实际开发中通常都需配置 mvc:annotation-driven 标签 
+     <mvc:annotation-driven /> 会自动注 
+	      册RequestMappingHandlerMapping 
+	    、RequestMappingHandlerAdapter 与 
+	   ExceptionHandlerExceptionResolver  三个bean。 
+	•   还将提供以下支持： 
+	    –  支持使用ConversionService 实例对表单参数进行类型转换 
+	    –  支持使用@NumberFormat annotation、@DateTimeFormat 
+	       注解完成数据类型的格式化 
+	    –  支持使用@Valid 注解对JavaBean 实例进行JSR 303 验证 
+	    –  支持使用@RequestBody 和@ResponseBody 注解 
+		-->
+	<!-- <mvc:annotation-driven></mvc:annotation-driven> -->
+	
+	<!--  将在SpringMVC 上下文中定义一个 
+       DefaultServletHttpRequestHandler，它会对进入DispatcherServlet 的 
+       请求进行筛查，如果发现是没有经过映射的请求，就将该请求交由WEB 
+       应用服务器默认的Servlet 处理，如果不是静态资源的请求，才由 
+       DispatcherServlet 继续处理 
+    –  一般WEB 应用服务器默认的Servlet 的名称都是default。若所使用的 
+       WEB 服务器的默认Servlet 名称不是default，则需要通过default- 
+       servlet-name 属性显式指定  -->
+	<mvc:default-servlet-handler />
+	
+   <!-- 会自动注册DefaultAnnotationHandlerMapping与AnnotationMethodHandlerAdapter 两个bean,是spring MVC为@Controllers分发请求所必须的。
+             并提供了：数据绑定支持，@NumberFormatannotation支持，@DateTimeFormat支持，@Valid支持，读写XML的支持（JAXB），读写JSON的支持（Jackson）。
+    -->	
+   <mvc:annotation-driven></mvc:annotation-driven>	
+	
+	<!-- 配置 ConversionService -->
+	<bean id="conversionService"
+		class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+		<property name="converters">
+			<set>
+				<ref bean="employeeConverter"/>
+			</set>
+		</property>	
+	</bean>
+	<!-- 
+	<mvc:view-controller path="/i18n" view-name="i18n"/>
+	 -->
+	<mvc:view-controller path="/i18n2" view-name="i18n2"/>
+	
+	<!-- 配置 SessionLocalResolver -->
+	<bean id="localeResolver"
+		class="org.springframework.web.servlet.i18n.SessionLocaleResolver"></bean>
+		
+		<mvc:interceptors>
+		  <!-- 配置自定义拦截器 -->
+		  <bean class="com.sky.knowledge.springmvc.interceptors.FirstInterceptor"></bean>
+		  <!-- 配置拦截器（不）作用的路径 -->
+		  <mvc:interceptor>
+		     <!--<mvc:mapping path="/emps"/>  -->
+		     <mvc:mapping path="/**"/>
+		     <mvc:exclude-mapping path="/emps"/>
+		     <bean class="com.sky.knowledge.springmvc.interceptors.SecondInterceptor"></bean>
+		  </mvc:interceptor>
+		  <!-- 配置 LocaleChanceInterceptor -->
+		  <bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor"></bean>
+		</mvc:interceptors>
+		
+		<!-- 配置 MultipartResolver -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="defaultEncoding" value="UTF-8"></property>
+		<property name="maxUploadSize" value="1024000"></property>	
+	</bean>		
+	<!-- 配置使用 SimpleMappingExceptionResolver 来映射异常 -->
+	<bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+		<property name="exceptionAttribute" value="ex"></property>
+		<property name="exceptionMappings">
+			<props>
+				<prop key="java.lang.ArrayIndexOutOfBoundsException">error</prop>
+			</props>
+		</property>
+	</bean>	
+	
+ </beans>   
